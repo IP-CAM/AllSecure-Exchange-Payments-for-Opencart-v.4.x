@@ -1,0 +1,270 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-payment" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa-solid fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light"><i class="fa-solid fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>    
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fa-solid fa-pencil"></i> {{ text_edit }}</div>
+      <p style="margin: 10px">{{ desc_about }}</p>
+      <div class="card-body">
+        <form id="form-payment" action="{{ action }}" method="post">
+           <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_status" id="input-status" class="form-select">
+                {% if payment_allsecureexchange_status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-title"><span data-toggle="tooltip" title="">{{ entry_title }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_title" value="{{ payment_allsecureexchange_title }}" placeholder="{{ entry_title_placeholder }}" id="input-title" class="form-control" />
+              <br/>
+              <span>{{ desc_title }}</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-mode">{{ entry_mode }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_mode" id="input-mode" class="form-select">
+                {% if payment_allsecureexchange_mode == 'live' %}
+                <option value="live" selected="selected">{{ text_live }}</option>
+                {% else %}
+                <option value="live">{{ text_live }}</option>
+                {% endif %}
+                {% if payment_allsecureexchange_mode == 'test' %}
+                <option value="test" selected="selected">{{ text_sandbox }}</option>
+                {% else %}
+                <option value="test">{{ text_sandbox }}</option>
+                {% endif %}>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-mode">{{ entry_checkout_mode }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_checkout" id="input-mode" class="form-select">
+                {% if payment_allsecureexchange_checkout == 'paymentjs' %}
+                <option value="paymentjs" selected="selected">{{ text_paymentjs }}</option>
+                {% else %}
+                <option value="paymentjs">{{ text_paymentjs }}</option>
+                {% endif %}
+                {% if payment_allsecureexchange_checkout == 'fullredirect' %}
+                <option value="fullredirect" selected="selected">{{ text_fullredirect }}</option>
+                {% else %}
+                <option value="fullredirect">{{ text_fullredirect }}</option>
+                {% endif %}>
+              </select>
+              <br/>
+              <span>{{ desc_checkout_mode }}</span>
+            </div>
+          </div>
+          <div class="row mb-3 required">
+            <label class="col-sm-2 col-form-label" for="input-api_user">{{ entry_api_user }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_api_user" value="{{ payment_allsecureexchange_api_user }}" placeholder="{{ entry_api_user }}" id="input-api_user" class="form-control" />
+              {% if error_api_user %}
+              <div class="text-danger">{{ error_api_user }}</div>
+              {% endif %}
+              <br/>
+              <span>{{ desc_api_user }}</span>
+            </div>
+          </div>
+          <div class="row mb-3 required">
+            <label class="col-sm-2 col-form-label" for="input-api_password">{{ entry_api_password }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_api_password" value="{{ payment_allsecureexchange_api_password }}" placeholder="{{ entry_api_password }}" id="input-api_password" class="form-control" />
+              {% if error_api_password %}
+              <div class="text-danger">{{ error_api_password }}</div>
+              {% endif %}
+              <br/>
+              <span>{{ desc_api_password }}</span>
+            </div>
+          </div>
+          <div class="row mb-3 required">
+            <label class="col-sm-2 col-form-label" for="input-api_key">{{ entry_api_key }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_api_key" value="{{ payment_allsecureexchange_api_key }}" placeholder="{{ entry_api_key }}" id="input-api_key" class="form-control" />
+              {% if error_api_key %}
+              <div class="text-danger">{{ error_api_key }}</div>
+              {% endif %}
+              <br/>
+              <span>{{ desc_api_key }}</span>
+            </div>
+          </div>
+          <div class="row mb-3 required">
+            <label class="col-sm-2 col-form-label" for="input-api_secret">{{ entry_api_secret }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_api_secret" value="{{ payment_allsecureexchange_api_secret }}" placeholder="{{ entry_api_secret }}" id="input-api_secret" class="form-control" />
+              {% if error_api_secret %}
+              <div class="text-danger">{{ error_api_secret }}</div>
+              {% endif %}
+              <br/>
+              <span>{{ desc_api_secret}}</span>
+            </div>
+          </div>
+          <div class="row mb-3 required">
+            <label class="col-sm-2 col-form-label" for="input-integrator_key">{{ entry_integrator_key }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_integrator_key" value="{{ payment_allsecureexchange_integrator_key }}" placeholder="{{ entry_integrator_key }}" id="input-integrator_key" class="form-control" />
+              {% if error_integrator_key %}
+              <div class="text-danger">{{ error_integrator_key }}</div>
+              {% endif %}
+              <br/>
+              <span>{{ desc_integrator_key }}</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-transaction_type">{{ entry_transaction_type }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_transaction_type" id="input-transaction_type" class="form-select">
+                {% if payment_allsecureexchange_transaction_type == 'debit' %}
+                <option value="debit" selected="selected">{{ text_debit }}</option>
+                {% else %}
+                <option value="debit">{{ text_debit }}</option>
+                {% endif %}
+                {% if payment_allsecureexchange_transaction_type == 'preauthorize' %}
+                <option value="preauthorize" selected="selected">{{ text_preauthorize }}</option>
+                {% else %}
+                <option value="preauthorize">{{ text_preauthorize }}</option>
+                {% endif %}>
+              </select>
+              <br/>
+              <span>{{ desc_transaction_type }}</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-allsecureexchange_card_supported">{{ entry_card_supported }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_card_supported[]" id="input-allsecureexchange_card_supported" class="form-select" multiple="true" rows="10">
+                {% for card_supported in cards_supported %}
+                {% if card_supported.value in payment_allsecureexchange_card_supported %}
+                <option value="{{ card_supported.value }}" selected="selected">{{ card_supported.label }}</option>
+                {% else %}
+                <option value="{{ card_supported.value }}">{{ card_supported.label }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+              {% if error_card_supported %}
+              <div class="text-danger">{{ error_card_supported }}</div>
+              {% endif %}
+              <br/>
+              <span>{{ desc_card_supported }}</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-transaction_email">{{ entry_transaction_email }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_transaction_email" id="input-transaction_email" class="form-select">
+                {% if payment_allsecureexchange_transaction_email %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+              <br/>
+              <span>{{ desc_transaction_email }}</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-transaction_confirmation_page">{{ entry_transaction_confirmation_page }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_transaction_confirmation_page" id="input-transaction_confirmation_page" class="form-select">
+                {% if payment_allsecureexchange_transaction_confirmation_page %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+              <br/>
+              <span>{{ desc_transaction_confirmation_page }}</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-order-status">{{ entry_order_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_order_status_id" id="input-order-status" class="form-select">
+                {% for order_status in order_statuses %}
+                {% if order_status.order_status_id == payment_allsecureexchange_order_status_id %}
+                <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                {% else %}
+                <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-geo-zone">{{ entry_geo_zone }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_geo_zone_id" id="input-geo-zone" class="form-select">
+                <option value="0">{{ text_all_zones }}</option>
+                {% for geo_zone in geo_zones %}
+                {% if geo_zone.geo_zone_id == payment_allsecureexchange_geo_zone_id %}
+                <option value="{{ geo_zone.geo_zone_id }}" selected="selected">{{ geo_zone.name }}</option>
+                {% else %}
+                <option value="{{ geo_zone.geo_zone_id }}">{{ geo_zone.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-logging">{{ entry_logging }}</label>
+            <div class="col-sm-10">
+              <select name="payment_allsecureexchange_logging" id="input-logging" class="form-select">
+                {% if payment_allsecureexchange_logging %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-sort-order">{{ entry_sort_order }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_allsecureexchange_sort_order" value="{{ payment_allsecureexchange_sort_order }}" placeholder="{{ entry_sort_order }}" id="input-sort-order" class="form-control" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

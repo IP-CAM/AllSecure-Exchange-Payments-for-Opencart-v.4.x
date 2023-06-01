@@ -1,0 +1,21 @@
+<div class='allsecurepay-payment-data'>
+    {% if (responseStatus == 'success') %}
+        <h3>{{ text_transaction_details }}: </h3>
+        <ul class='allsecurepay-thankyou-order-details order_details'>
+            {% if (authCode != '') %}
+            <li class='allsecurepay-order-overview'>{{ text_transaction_codes }} <strong>{{ authCode }}</strong></li>
+            {% endif %} 
+            <li class='allsecurepay-order-overview'>{{ text_transaction_id }} <strong>{{ transactionId }}</strong></li>
+            <li class='allsecurepay-order-overview'>{{ text_card_type }} <strong>{{ binBrand }} *** {{ lastFourDigits }}</strong></li>
+            <li class='allsecurepay-order-overview'>{{ text_payment_type }} <strong>{{ transactionType }}</strong></li>
+            <li class='allsecurepay-order-overview'>{{ text_payment_currency }} <strong>{{ transactionCurrency }}</strong></li>
+            <li class='allsecurepay-order-overview'>{{ text_payment_amountpaid }} <strong>{{ transactionAmount }}</strong></li>
+            <li class='allsecurepay-order-overview'>{{ text_transaction_time }} <strong>{{ timestamp }}</strong></li>
+        </ul>
+    {% else %}
+        <h2>{{ status_failed }} </h2>
+        <ul class='allsecurepay-thankyou-order-details order_details'>
+           <li class='allsecurepay-order-overview'><strong>{{ errorMessage }}</strong></li>     
+        </ul>
+    {% endif %} 
+</div>

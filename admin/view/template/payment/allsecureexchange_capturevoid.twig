@@ -1,0 +1,74 @@
+<div class="table-responsive card-body">
+    <table class="table hitpay-subtable">
+            <tr>
+                <th>{{ text_transaction_id }}</th>
+                <td class="value">{{ uuid }}</td>
+            </tr>
+            <tr>
+                <th>{{ text_payment_status }}</th>
+                <td class="value">{{ status }}</td>
+            </tr>
+
+            <tr>
+                <td colspan="2" class="value">
+                    <button type="button" id="allsecurepay-capture" class="btn btn-primary">{{ text_capture }}</button>
+                    <button type="button" id="allsecurepay-void" class="btn btn-primary">{{ text_void }}</button>
+                </td>
+            </tr>
+    </table>
+</div>
+<script type="text/javascript"><!--
+$(document).ready(function() {
+    $('#allsecurepay-capture').click(function(e){
+        $.ajax({
+		url: 'index.php?route=extension/allsecureexchange/payment/allsecureexchange|capture&user_token={{ user_token }}',
+                type: 'post',
+                data: 'order_id={{ order_id }}',
+		dataType: 'json',
+		beforeSend: function() {
+                    $('#allsecurepay-capture').button('loading');
+		},
+		complete: function() {
+                    $('#allsecurepay-capture').button('reset');
+		},
+		success: function(json) {
+                    if (json.status == 1) {
+                        alert(json.message);
+                        location.href=location.href;
+                    } else {
+                        alert(json.message);
+                    }
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+    });
+    
+    $('#allsecurepay-void').click(function(e){
+        $.ajax({
+		url: 'index.php?route=extension/allsecureexchange/payment/allsecureexchange|void&user_token={{ user_token }}',
+                type: 'post',
+                data: 'order_id={{ order_id }}',
+		dataType: 'json',
+		beforeSend: function() {
+                    $('#allsecurepay-void').button('loading');
+		},
+		complete: function() {
+                    $('#allsecurepay-void').button('reset');
+		},
+		success: function(json) {
+                    if (json.status == 1) {
+                        alert(json.message);
+                        location.href=location.href;
+                    } else {
+                        alert(json.message);
+                    }
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+    });
+});
+//--></script> 
