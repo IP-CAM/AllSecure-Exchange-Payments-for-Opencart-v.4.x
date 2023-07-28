@@ -21,7 +21,7 @@
 $(document).ready(function() {
     $('#allsecurepay-capture').click(function(e){
         $.ajax({
-		url: 'index.php?route=extension/allsecureexchange/payment/allsecureexchange|capture&user_token={{ user_token }}',
+		url: 'index.php?route={{ capture_action }}&user_token={{ user_token }}',
                 type: 'post',
                 data: 'order_id={{ order_id }}',
 		dataType: 'json',
@@ -47,7 +47,7 @@ $(document).ready(function() {
     
     $('#allsecurepay-void').click(function(e){
         $.ajax({
-		url: 'index.php?route=extension/allsecureexchange/payment/allsecureexchange|void&user_token={{ user_token }}',
+		url: 'index.php?route={{ void_action }}&user_token={{ user_token }}',
                 type: 'post',
                 data: 'order_id={{ order_id }}',
 		dataType: 'json',

@@ -20,7 +20,7 @@
 $(document).ready(function() {
     $('#allsecurepay-refund').click(function(e){
         $.ajax({
-		url: 'index.php?route=extension/allsecureexchange/payment/allsecureexchange|refund&user_token={{ user_token }}',
+		url: 'index.php?route={{ refund_action }}&user_token={{ user_token }}',
                 type: 'post',
                 data: 'order_id={{ order_id }}',
 		dataType: 'json',

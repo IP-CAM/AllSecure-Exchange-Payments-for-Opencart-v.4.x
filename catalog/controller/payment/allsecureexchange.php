@@ -26,10 +26,17 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
     public function index()
     {
         $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
+        $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
+        
+        $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
 
         $data['button_confirm'] = $this->language->get('button_confirm');
-
-        $data['action'] = $this->url->link('extension/allsecureexchange/payment/allsecureexchange|pay', '', true);
+        
+        $payUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','pay');
+                
+        $data['action'] = $this->url->link($payUrl, '', true);
+        
+        $data['isVersion402'] = $this->payment->isVersion402();
 
         $checkout_type = $this->config->get('payment_allsecureexchange_checkout');
         if ($checkout_type == 'paymentjs') {
@@ -195,7 +202,6 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                 throw new \Exception($this->language->get('error_no_order_data'));
             }
         } catch (\Exception $e) {
-            //echo $e->getTraceAsString();exit;
             $errorMessage = $e->getMessage();
             $this->payment->log('Payment Create Catch: '.$errorMessage);
             $message = $this->language->get('error_payment_failed').' '.$errorMessage;
@@ -300,9 +306,11 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
         
         $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
+        
+        $order_id = false;
         try {
             $this->payment->log('Return URL Called');
-            $order_id = false;
+            
             if (isset($this->session->data['order_id']) && !empty($this->session->data['order_id'])) {
                 $order_id = (int)($this->session->data['order_id']);
             } else if (isset($this->request->get['order_id'])) {
@@ -315,7 +323,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                     $order_status_id = (int)$order_info['order_status_id'];
                     if ($order_status_id == 0) {
                         $comment = $this->language->get('status_webhook_wait');
-                        $this->model_checkout_order->addHistory((int)$order_id, 1, $comment);
+                        //$this->model_checkout_order->addHistory((int)$order_id, 1, $comment);
                     }
                 }
                 $this->response->redirect($this->url->link('checkout/success', 'order_id=' . $order_id, true));
@@ -326,8 +334,9 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
             $errorMessage = $e->getMessage();
             $this->payment->log('Return URL Catch: '.$errorMessage);
             $message = $this->language->get('error_payment_failed').' '.$errorMessage;
-            $this->session->data['error'] = $message;
-            $this->response->redirect($this->url->link('checkout/cart','egassemrorre=' . base64_encode($message))); 
+            /*$this->session->data['error'] = $message;
+            $this->response->redirect($this->url->link('checkout/cart','egassemrorre=' . base64_encode($message))); */
+            $this->response->redirect($this->url->link('checkout/success', 'order_id=' . $order_id, true));
         }
     }
 
@@ -639,15 +648,20 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         
         $order_id = $order['order_id'];
         $merchantTransactionId = $this->encodeOrderId($order_id);
+        
+        $webhookUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','webhook');
+        $cancelUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','cancel');
+        $returnUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','return');
+        $errorUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','error');
 
         $transasction->setMerchantTransactionId($merchantTransactionId)
             ->setAmount($amount)
             ->setCurrency($order['currency_code'])
             ->setCustomer($customer)
-            ->setCallbackUrl($this->url->link('extension/allsecureexchange/payment/allsecureexchange|webhook', 'order_id='.$order_id, true))
-            ->setCancelUrl($this->url->link('extension/allsecureexchange/payment/allsecureexchange|cancel', 'order_id='.$order_id, true))
-            ->setSuccessUrl($this->url->link('extension/allsecureexchange/payment/allsecureexchange|return', 'order_id='.$order_id, true))
-            ->setErrorUrl($this->url->link('extension/allsecureexchange/payment/allsecureexchange|error', 'order_id='.$order_id, true));
+            ->setCallbackUrl($this->url->link($webhookUrl, 'order_id='.$order_id, true))
+            ->setCancelUrl($this->url->link($cancelUrl, 'order_id='.$order_id, true))
+            ->setSuccessUrl($this->url->link($returnUrl, 'order_id='.$order_id, true))
+            ->setErrorUrl($this->url->link($errorUrl, 'order_id='.$order_id, true));
         
         if (isset($token)) {
             $transasction->setTransactionToken($token);
@@ -727,9 +741,17 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         if ($order_id > 0) {
             $this->load->model('checkout/order');
             $order = $this->model_checkout_order->getOrder($order_id);
-
-            if ($order && $order['payment_code'] != 'allsecureexchange') {
-                $order = false;
+            
+            $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
+            $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
+            if ($this->payment->isVersion402()) {
+                if ($order && $order['payment_method']['code'] != 'allsecureexchange.allsecureexchange') {
+                    $order = false;
+                }
+            } else {
+                if ($order && $order['payment_code'] != 'allsecureexchange') {
+                    $order = false;
+                }
             }
         }
         return $order;

@@ -20,13 +20,14 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
                   status varchar(100),
                   `response` TEXT
                 ) ENGINE=MyISAM DEFAULT COLLATE=utf8_general_ci;");
+        
         $this->load->model('setting/event');
 
         $eventData = [
             'code' => 'payment_allsecureexchange_admin_order_info',
             'description' => 'To display Allsecureexchange payment information',
             'trigger' => 'admin/view/sale/order_info/before',
-            'action' => 'extension/allsecureexchange/payment/allsecureexchange|order_info',
+            'action' => $this->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange', 'order_info'),
             'status' => 1,
             'sort_order' => 1
         ];
@@ -36,7 +37,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
             'code' => 'payment_allsecureexchange_catalog_success_payment_info',
             'description' => 'To display Allsecureexchange payment information',
             'trigger' => 'catalog/view/common/success/after',
-            'action' => 'extension/allsecureexchange/payment/allsecureexchange|success_payment_info',
+            'action' => $this->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange', 'success_payment_info'),
             'status' => 1,
             'sort_order' => 1
         ];
@@ -46,7 +47,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
             'code' => 'payment_allsecureexchange_catalog_checkout_script',
             'description' => 'To add javascript into the page',
             'trigger' => 'catalog/view/checkout/checkout/after',
-            'action' => 'extension/allsecureexchange/payment/allsecureexchange|checkout_after',
+            'action' => $this->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange', 'checkout_after'),
             'status' => 1,
             'sort_order' => 5
         ];
@@ -56,7 +57,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
             'code' => 'payment_allsecureexchange_catalog_cart_errormessage',
             'description' => 'To display error message into the page',
             'trigger' => 'catalog/view/checkout/cart/after',
-            'action' => 'extension/allsecureexchange/payment/allsecureexchange|cart_after',
+            'action' => $this->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange', 'cart_after'),
             'status' => 1,
             'sort_order' => 5
         ];
@@ -66,7 +67,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
             'code' => 'payment_allsecureexchange_catalog_error_errormessage',
             'description' => 'To display error message into the page',
             'trigger' => 'catalog/view/error/not_found/after',
-            'action' => 'extension/allsecureexchange/payment/allsecureexchange|error_after',
+            'action' => $this->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange', 'error_after'),
             'status' => 1,
             'sort_order' => 5
         ];
@@ -237,6 +238,26 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
                 fwrite($fp, print_r($content, true));
                 fclose($fp);
             }
+        }
+    }
+    
+    public function isVersion402()
+    {
+        $status = true;
+        
+        if (VERSION == '4.0.0.0' || VERSION == '4.0.1.0' || VERSION == '4.0.1.1') {
+            $status = false;
+        }
+        
+        return $status;
+    }
+    
+    public function getCompatibleRoute($route, $method)
+    {
+        if ($this->isVersion402()) {
+            return $route.'.'.$method;
+        } else {
+            return $route.'|'.$method;
         }
     }
 }

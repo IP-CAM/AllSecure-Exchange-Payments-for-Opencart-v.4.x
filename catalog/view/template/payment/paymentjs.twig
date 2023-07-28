@@ -93,6 +93,7 @@
     var isPaymentJsEnabled = false;
     var allsecurepayPayment = null;
     var card_supported = '{{ card_supported }}';
+    var isVersion402  = {{ isVersion402 }};
     
     var isPaymentjsAvailable = false;
     
@@ -105,6 +106,12 @@
 
             if (typeof(PaymentJs) !== "undefined") {
                 isPaymentjsAvailable = true;
+                
+                var paddingInput = '0.35rem 0.75rem';
+                if (isVersion402) {
+                    var paddingInput = '0.25rem 0.75rem';
+                }
+                    
                 
                 allsecurepayPayment = new PaymentJs();
 
@@ -120,7 +127,7 @@
                         'border-radius': '0.25rem',
                         'font-size': '1rem',
                         'line-height': '1.8',
-                        'padding': '0.35rem 0.75rem',
+                        'padding': paddingInput,
                         'appearance': 'none',
                         'transition': 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
                     };
@@ -135,7 +142,7 @@
                         'border-radius': '0.25rem',
                         'font-size': '1rem',
                         'line-height': '1.8',
-                        'padding': '0.35rem 0.75rem',
+                        'padding': paddingInput,
                         'appearance': 'none',
                         'transition': 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
                     };

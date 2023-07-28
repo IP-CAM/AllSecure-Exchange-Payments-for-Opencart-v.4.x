@@ -451,7 +451,10 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         
         $is_allsecureexchange_order = false;
         $tab_key = -1;
-
+        if ($this->payment->isVersion402()) {
+            $data['tabs'][] = array('code' => 'allsecureexchange', 'content' => '', 'title' => $this->language->get('heading_title'));
+        }
+        
         if (isset($data['tabs'])) {
             foreach ($data['tabs'] as $key => $tabCol) {
                 if ($tabCol['code'] == 'allsecureexchange') {
@@ -491,6 +494,9 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
                 $params['text_transaction_id'] = $this->language->get('text_transaction_id');
                 $params['text_refund'] = $this->language->get('text_refund');
                 
+                $refundUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','refund');
+                $params['refund_action'] = $refundUrl;
+                
                 $content .= $this->load->view('extension/allsecureexchange/payment/allsecureexchange_refund', $params);
                 $data['tabs'][$tab_key]['content'] .= $content;
                 
@@ -504,6 +510,12 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
                 $params['text_transaction_id'] = $this->language->get('text_transaction_id');
                 $params['text_capture'] = $this->language->get('text_capture');
                 $params['text_void'] = $this->language->get('text_void');
+                
+                $captureUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','capture');
+                $params['capture_action'] = $captureUrl;
+                
+                $voidUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','void');
+                $params['void_action'] = $voidUrl;
                 
                 $content .= $this->load->view('extension/allsecureexchange/payment/allsecureexchange_capturevoid', $params);
 
@@ -732,7 +744,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
 
             $transaction_id = $this->payment->getTransactionSingle($order_id, 'transaction_id');
 
-            $merchantTransactionId = 'capture-'.$this->encodeOrderId($order_id);
+            $merchantTransactionId = 'refund-'.$this->encodeOrderId($order_id);
 
             $client = $this->getClient();
 

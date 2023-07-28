@@ -1,6 +1,3 @@
-# exchange-opencart
-Accept payments in your OpenCart store using AllSecure **EXCHANGE** Platform. See a fully functional OpenCart <a href="http://demo.allsecpay.xyz/cart/exchange/opencart" target="_new">demo store</a> with AllSecure **EXCHANGE** as a payment gateway.
-
 ## Installing
 
 == Method 1: ==
@@ -46,3 +43,11 @@ Accept payments in your OpenCart store using AllSecure **EXCHANGE** Platform. Se
 3. Scroll down to locate the Allsecure Exchange
 4. Click red colored - icon to edit the extension
 5. Enter/Update Allsecure Exchange settings 
+
+## Changelog
+
+= 1.0.1 =
+* Basic irregularities.
+
+= 1.0.0 =
+* Initial release.
