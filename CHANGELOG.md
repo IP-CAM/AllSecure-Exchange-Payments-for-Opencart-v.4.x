@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.0.2 (2023-08-01)
+### Fix
+- Sync transactions handling
+
 ## v1.0.1 (2023-07-28)
 ### Fix
 - Basic irregulariies

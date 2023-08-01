@@ -44,10 +44,3 @@
 4. Click red colored - icon to edit the extension
 5. Enter/Update Allsecure Exchange settings 
 
-## Changelog
-
-= 1.0.1 =
-* Basic irregularities.
-
-= 1.0.0 =
-* Initial release.

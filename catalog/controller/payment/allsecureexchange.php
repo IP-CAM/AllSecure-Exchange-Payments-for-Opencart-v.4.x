@@ -194,7 +194,11 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                     }
                 } else {
                     // handle error
-                    $errorCode = $result->getErrorCode();
+                    $error = $result->getFirstError();
+                    $errorCode = $error->getCode();
+                    if (empty($errorCode)) {
+                        $errorCode = $error->getAdapterCode();
+                    }
                     $errorMessage = $this->getErrorMessageByCode($errorCode);
                     throw new \Exception($errorMessage);
                 }
