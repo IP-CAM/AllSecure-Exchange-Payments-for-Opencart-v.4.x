@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.0.3 (2023-11-28)
+### Fix
+- Additional payment method
+
 ## v1.0.2 (2023-08-01)
 ### Fix
 - Sync transactions handling

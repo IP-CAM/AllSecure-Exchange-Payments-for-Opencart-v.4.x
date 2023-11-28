@@ -78,6 +78,27 @@
                         </div>
 
             </div>
+                            
+            {% if enable_installment %}
+            <div class="col mb-3 required" style="display:none" id="allsecurepay_pay_installment_container">
+                <label for="allsecurepay_pay_installment" class="label">
+                    <input type="checkbox" class="input-checkbox" name="allsecurepay_pay_installment" id="allsecurepay_pay_installment" />
+                     <span style="position: relative;   top: -2px;">{{ text_pay_in_installments }}</span>
+                </label>
+            </div>
+            <div class="col mb-3 required" id="allsecurepay_installment_number_container" style="display: none">
+                <label class="label" for="allsecurepay_installment_number">
+                    <span>{{ text_select_no_of_installments }}</span>
+                </label>
+                <div class="control">
+                    <select class="form-control" name="allsecurepay_installment_number" 
+                        id="allsecurepay_installment_number"
+                        style="width:100px;  min-height: 35px; text-align: center"
+                    >
+                    </select>
+                </div>
+            </div>
+            {% endif %}                
         </div>
     </div>
     <div class="d-inline-block pt-2 pd-2 w-100 text-end">
@@ -96,6 +117,17 @@
     var isVersion402  = {{ isVersion402 }};
     
     var isPaymentjsAvailable = false;
+    
+    var enable_installment = {{ enable_installment }}
+    
+    {% if enable_installment %}
+        window.installment_bins = '{{ installment_bins_comma_separated }}';
+        var $allowedBins = window.installment_bins;
+        window.allowed_installments = new Array();
+        {% for installment_bin in installment_bins %}
+            window.allowed_installments['{{ installment_bin }}'] = '{{ allowed_installments[loop.index0] }}';
+        {% endfor %}
+    {% endif %}
     
     $(document).ready(function() {
         checkPaymentjsAvailable();
@@ -163,6 +195,7 @@
                         } else {
                             isValidBrand = false;
                         }
+                        installmentHandler(data);
                     })
 
                     allsecurepayPayment.cvvOn('input', function(data) {
@@ -178,6 +211,14 @@
                 setTimeout(checkPaymentjsAvailable, 500);
             }
         }
+        
+        $('#allsecurepay_pay_installment', document).on('click', function(){
+            if ($(this).is(':checked')) {
+                $('#allsecurepay_installment_number_container').show();
+            } else {
+                $('#allsecurepay_installment_number_container').hide();
+            }
+        });
 
         $(document).keyup('#allsecurepay_expiration_date', function () {
             allsecurepayExpiryField();
@@ -187,6 +228,41 @@
             allsecurepayValidateExpiry();
         });
     });
+    
+    function installmentHandler(data) {
+        if ($('#allsecurepay_pay_installment_container').length > 0) {
+            $allowedBins = $allowedBins.toString().split(",");
+            var isInstallmentAllowed = $allowedBins.includes(data.firstSix);
+            if (isInstallmentAllowed) {
+                var cardBin = data.firstSix;
+                $('#allsecurepay_pay_installment_container').show();
+                updateInstallmentNumbers(cardBin);
+            } else {
+                $('#allsecurepay_pay_installment_container').hide();
+                $('#allsecurepay_installment_number_container').hide();
+                $('#allsecurepay_pay_installment').prop('checked', false);
+                $('#allsecurepay_installment_number').html('');
+            }
+        }
+    }
+
+    function updateInstallmentNumbers(cardBin) {
+        $('#allsecurepay_installment_number').html('');
+        var installment_numbers = window.allowed_installments[cardBin];
+        if (installment_numbers.length > 0) {
+            installment_numbers = installment_numbers.toString().split(",");
+            var optionText = '';
+            for (installment_number of installment_numbers) {
+                installment_number = installment_number.trim();
+                if (installment_number.length == 1) {
+                    installment_number = '0'+installment_number;
+                }
+                var option = '<option value="'+installment_number+'">'+installment_number+'</option>';
+                optionText += option;
+            }
+            $('#allsecurepay_installment_number').html(optionText);
+        }
+    }
     
     function allsecurepayExpiryField() 
     {
@@ -347,6 +423,22 @@
         });  
     }
     
+    function isInstallmentAvailed() {
+        var availed = 0;
+        if (enable_installment && $('#allsecurepay_pay_installment').is(':checked')) {
+            var availed = 1;
+        }
+        return availed;
+    };
+    function getInstallmentNumber() {
+        var installment_number = '';
+        if (enable_installment) {
+            installment_number = $('#allsecurepay_installment_number').val();
+        }
+        return installment_number;
+
+    };
+    
     $('#button-confirm').on('click', function() {
         var element = this;
         $(element).prop('disabled', true).addClass('loading');
@@ -373,7 +465,7 @@
                         url: allsecureConfirmUrl,
                         type: 'post',
                         dataType: 'json',
-                        data: 'allsecurepay_transaction_token='+token,
+                        data: 'allsecurepay_transaction_token='+token+'&allsecurepay_pay_installment='+isInstallmentAvailed()+'&allsecurepay_installment_number='+getInstallmentNumber(),
                         cache: false,
                         complete: function() {
                             $(element).prop('disabled', false).removeClass('loading');

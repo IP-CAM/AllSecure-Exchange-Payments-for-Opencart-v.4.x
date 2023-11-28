@@ -18,6 +18,8 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
     const STATE_REFUND = 11;
     const STATE_FAILED = 10;
     
+    protected $code = '';
+    
     /**
      * @var $payment
      */
@@ -27,50 +29,68 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
     {
         $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
         $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
-        
+
         $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
 
         $data['button_confirm'] = $this->language->get('button_confirm');
-        
-        $payUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','pay');
-                
-        $data['action'] = $this->url->link($payUrl, '', true);
-        
-        $data['isVersion402'] = $this->payment->isVersion402();
-
-        $checkout_type = $this->config->get('payment_allsecureexchange_checkout');
-        if ($checkout_type == 'paymentjs') {
-            $testMode = 0;
-            if ($this->config->get('payment_allsecureexchange_mode') == 'test') {
-                $testMode = 1;
-            }
             
-            $card_supported = $this->config->get('payment_allsecureexchange_card_supported');
-            if ($card_supported && is_array($card_supported)) {
-                $card_supported = implode(',', $card_supported);
-            } else {
-                
-            }
-
-            $data['test_mode'] = $testMode;
-            $data['public_integration_key'] = $this->config->get('payment_allsecureexchange_integrator_key');
-            $data['card_supported'] = strtolower($card_supported);
-            $data['image_path'] = HTTP_SERVER .'extension/allsecureexchange/catalog/view/image/';
-            $data['text_credit_card_information'] = $this->language->get('text_credit_card_information');
-            $data['text_card_holder'] = $this->language->get('text_card_holder');
-            $data['text_card_number'] = $this->language->get('text_card_number');
-            $data['text_expiration_date'] = $this->language->get('text_expiration_date');
-            $data['text_cvv'] = $this->language->get('text_cvv');
-            $data['error_required_field'] = $this->language->get('error_required_field');
-            $data['error_invalid_holder_name'] = $this->language->get('error_invalid_holder_name');
-            $data['error_invalid_card_number'] = $this->language->get('error_invalid_card_number');
-            $data['error_card_not_supported'] = $this->language->get('error_card_not_supported');
-            $data['error_incorrect_card_expire_date'] = $this->language->get('error_incorrect_card_expire_date');
-            $data['error_invalid_cvv'] = $this->language->get('error_invalid_cvv');
-
-            return $this->load->view('extension/allsecureexchange/payment/paymentjs', $data);
-        } else {
+        if (!empty($this->code)) {
+            $payUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange'.$this->code,'pay');
+            $data['action'] = $this->url->link($payUrl, '', true);
             return $this->load->view('extension/allsecureexchange/payment/fullpageredirect', $data);
+        } else {
+            $payUrl = $this->payment->getCompatibleRoute('extension/allsecureexchange/payment/allsecureexchange','pay');
+
+            $data['action'] = $this->url->link($payUrl, '', true);
+
+            $data['isVersion402'] = $this->payment->isVersion402();
+
+            $checkout_type = $this->config->get('payment_allsecureexchange_checkout');
+            if ($checkout_type == 'paymentjs') {
+                $testMode = 0;
+                if ($this->config->get('payment_allsecureexchange_mode') == 'test') {
+                    $testMode = 1;
+                }
+
+                $card_supported = $this->config->get('payment_allsecureexchange_card_supported');
+                if ($card_supported && is_array($card_supported)) {
+                    $card_supported = implode(',', $card_supported);
+                }
+
+                $enableInstallment = 0;
+                if ($this->config->get('payment_allsecureexchange_enable_installment')) {
+                    $enableInstallment = 1;
+                }
+
+                $installment_bins = $this->config->get('payment_allsecureexchange_installment_bins');
+                if ($enableInstallment && $installment_bins && is_array($installment_bins)) {
+                    $allowed_installment_bins = implode(',', $installment_bins);
+                    $data['installment_bins_comma_separated'] = $allowed_installment_bins;
+                    $data['installment_bins'] = $installment_bins;
+                    $data['allowed_installments'] = $this->config->get('payment_allsecureexchange_allowed_installments');
+                }
+
+                $data['enable_installment'] = $enableInstallment;
+                $data['test_mode'] = $testMode;
+                $data['public_integration_key'] = $this->config->get('payment_allsecureexchange_integrator_key');
+                $data['card_supported'] = strtolower($card_supported);
+                $data['image_path'] = HTTP_SERVER .'extension/allsecureexchange/catalog/view/image/';
+                $data['text_credit_card_information'] = $this->language->get('text_credit_card_information');
+                $data['text_card_holder'] = $this->language->get('text_card_holder');
+                $data['text_card_number'] = $this->language->get('text_card_number');
+                $data['text_expiration_date'] = $this->language->get('text_expiration_date');
+                $data['text_cvv'] = $this->language->get('text_cvv');
+                $data['error_required_field'] = $this->language->get('error_required_field');
+                $data['error_invalid_holder_name'] = $this->language->get('error_invalid_holder_name');
+                $data['error_invalid_card_number'] = $this->language->get('error_invalid_card_number');
+                $data['error_card_not_supported'] = $this->language->get('error_card_not_supported');
+                $data['error_incorrect_card_expire_date'] = $this->language->get('error_incorrect_card_expire_date');
+                $data['error_invalid_cvv'] = $this->language->get('error_invalid_cvv');
+
+                return $this->load->view('extension/allsecureexchange/payment/paymentjs', $data);
+            } else {
+                return $this->load->view('extension/allsecureexchange/payment/fullpageredirect', $data);
+            }
         }
     }
         
@@ -90,26 +110,43 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
 
             if ($order && $order['order_id'] > 0) {
                 $transaction_token = '';
+                $installment_number = '';
 
                 $checkoutType = $this->config->get('payment_allsecureexchange_checkout');
                 $action = $this->config->get('payment_allsecureexchange_transaction_type');
-
-                if ($checkoutType == 'paymentjs') {
-                    if (isset($this->request->post['allsecurepay_transaction_token'])) {
-                        $transaction_token = $this->request->post['allsecurepay_transaction_token'];
-                        if (!empty($transaction_token)) {
-                            $transaction_token  = trim($transaction_token);
-                            $transaction_token = strip_tags($transaction_token);
+                
+                if (!empty($this->code)) {
+                    $action = 'debit';
+                    $checkoutType = 'additional_redirect_'.$this->code;
+                } else {
+                    if ($checkoutType == 'paymentjs') {
+                        if (isset($this->request->post['allsecurepay_transaction_token'])) {
+                            $transaction_token = $this->request->post['allsecurepay_transaction_token'];
+                            if (!empty($transaction_token)) {
+                                $transaction_token  = trim($transaction_token);
+                                $transaction_token = strip_tags($transaction_token);
+                            }
                         }
-                    }
 
-                    if (empty($transaction_token)) {
-                        throw new \Exception($this->language->get('error_invalid_transaction_token'));
+                        if (empty($transaction_token)) {
+                            throw new \Exception($this->language->get('error_invalid_transaction_token'));
+                        }
+
+                        if (isset($this->request->post['allsecurepay_pay_installment']) && ($this->request->post['allsecurepay_pay_installment'] != 0)) {
+                            $installment_number = $this->request->post['allsecurepay_installment_number'];
+                            if (!empty($installment_number) && $installment_number != null  && $installment_number != 'null') {
+                                $installment_number  = trim($installment_number);
+                                $installment_number  = strip_tags($installment_number);
+                                $action = 'debit';
+                            } else {
+								$installment_number  = '';
+							}
+                        }
                     }
                 }
 
                 if ($action == 'debit') {
-                    $result = $this->debitTransaction($order, $transaction_token);
+                    $result = $this->debitTransaction($order, $transaction_token, $installment_number);
                 } else {
                     $result = $this->preauthorizeTransaction($order, $transaction_token);
                 }
@@ -137,11 +174,18 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                         throw new \Exception($errorMessage);
                     } elseif ($result->getReturnType() == AllsecureResult::RETURN_TYPE_REDIRECT) {
                         //redirect the user
+                        if (!empty($installment_number)) {
+                            $this->payment->updateTransactionResponse($order_id, 'installment_number', $installment_number);
+                        }
                         $this->payment->updateTransaction($order_id, 'status', 'redirected');
                         $redirectLink = $result->getRedirectUrl();
                         $json['redirect'] = $redirectLink;
                     } elseif ($result->getReturnType() == AllsecureResult::RETURN_TYPE_PENDING) {
                         //payment is pending, wait for callback to complete
+                        if (!empty($installment_number)) {
+                            $this->payment->updateTransactionResponse($order_id, 'installment_number', $installment_number);
+                        }
+                        
                         $this->payment->updateTransaction($order_id, 'status', 'pending');
                         if ($action == 'debit') {
                             $comment1 = $this->language->get('status_pending_debt');
@@ -152,7 +196,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                         $comment2 = $this->language->get('text_transaction_id').': ' .$gatewayReferenceId;
                         $comment = $comment1.$comment2;
                         
-                        $paymentInfo = $this->get_payment_info($gatewayReferenceId);
+                        $paymentInfo = $this->get_payment_info($gatewayReferenceId, $order_id);
                         if ($paymentInfo) {
                             $comment = $comment.$paymentInfo;
                         }
@@ -162,13 +206,16 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                         $json['redirect'] = $this->url->link('checkout/success', 'order_id=' . $order_id, true);
                     } elseif ($result->getReturnType() == AllsecureResult::RETURN_TYPE_FINISHED) {
                         //payment is finished, update your cart/payment transaction
+                        if (!empty($installment_number)) {
+                            $this->payment->updateTransactionResponse($order_id, 'installment_number', $installment_number);
+                        }
                         if ($action == 'debit') {
                             $this->payment->updateTransaction($order_id, 'status', 'debited');
                             $comment1 = $this->language->get('status_finished_debt');
                             $comment2 = $this->language->get('text_transaction_id').': ' .$gatewayReferenceId;
                             $comment = $comment1.$comment2;
                             
-                            $paymentInfo = $this->get_payment_info($gatewayReferenceId);
+                            $paymentInfo = $this->get_payment_info($gatewayReferenceId, $order_id);
                             if ($paymentInfo) {
                                 $comment = $comment.$paymentInfo;
                             }
@@ -182,7 +229,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                             $comment2 = $this->language->get('text_transaction_id').': ' .$gatewayReferenceId;
                             $comment = $comment1.$comment2;
                             
-                            $paymentInfo = $this->get_payment_info($gatewayReferenceId);
+                            $paymentInfo = $this->get_payment_info($gatewayReferenceId, $order_id);
                             if ($paymentInfo) {
                                 $comment = $comment.$paymentInfo;
                             }
@@ -393,7 +440,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                             $comment2 = $this->language->get('text_transaction_id').': ' .$gatewayReferenceId;
                             $comment = $comment1.$comment2;
                             
-                            $paymentInfo = $this->get_payment_info($gatewayReferenceId);
+                            $paymentInfo = $this->get_payment_info($gatewayReferenceId, $order_id);
                             if ($paymentInfo) {
                                 $comment = $comment.$paymentInfo;
                             }
@@ -432,7 +479,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                             $comment2 = $this->language->get('text_transaction_id').': ' .$gatewayReferenceId;
                             $comment = $comment1.$comment2;
                             
-                            $paymentInfo = $this->get_payment_info($gatewayReferenceId);
+                            $paymentInfo = $this->get_payment_info($gatewayReferenceId, $order_id);
                             if ($paymentInfo) {
                                 $comment = $comment.$paymentInfo;
                             }
@@ -516,9 +563,23 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
             $api_key = trim($api_key);
         }
         
+        if (!empty($this->code)) {
+            $api_key = $this->config->get('payment_allsecureexchange'.$this->code.'_api_key');
+            if (!empty($api_key)) {
+                $api_key = trim($api_key);
+            }
+        }
+        
         $api_secret = $this->config->get('payment_allsecureexchange_api_secret');
         if (!empty($api_secret)) {
             $api_secret = trim($api_secret);
+        }
+        
+        if (!empty($this->code)) {
+            $api_secret = $this->config->get('payment_allsecureexchange'.$this->code.'_api_secret');
+            if (!empty($api_secret)) {
+                $api_secret = trim($api_secret);
+            }
         }
 
         $client = new AllsecureClient(
@@ -597,7 +658,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
      * @param string $action
      * @return $this
      */
-    public function processTransaction($order, $token, $action)
+    public function processTransaction($order, $token, $action, $installment_number = '')
     {
         $client = $this->getClient();
         
@@ -671,6 +732,11 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
             $transasction->setTransactionToken($token);
         }
 
+        if (!empty($installment_number)) {
+            $extraData = ['installment' => $installment_number];
+            $transasction->setExtraData($extraData);
+        }
+
         if ($action == 'debit') {
             $this->payment->log('Debit Transaction');
             $this->payment->log((array)($transasction));
@@ -692,9 +758,9 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
      * 
      * @return $this
      */
-    public function debitTransaction($order, $token)
+    public function debitTransaction($order, $token, $installment_number = '')
     {
-        return @$this->processTransaction($order, $token, 'debit');
+        return @$this->processTransaction($order, $token, 'debit', $installment_number);
     }
 
     /**
@@ -749,16 +815,31 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
             $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
             $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
             if ($this->payment->isVersion402()) {
-                if ($order && $order['payment_method']['code'] != 'allsecureexchange.allsecureexchange') {
+                if ($order && !(preg_match('/allsecureexchange/', $order['payment_method']['code']))) {
                     $order = false;
                 }
             } else {
-                if ($order && $order['payment_code'] != 'allsecureexchange') {
+                if ($order && !(preg_match('/allsecureexchange/', $order['payment_code']))) {
                     $order = false;
                 }
             }
         }
         return $order;
+    }
+    
+    public function getPaymentMethodCodeFromOrder($order)
+    {
+        $code = '';
+        if ($this->payment->isVersion402()) {
+            $method_code = $order['payment_method']['code'];
+            $codes = explode('.',$method_code);
+            $code = $codes[0];
+            
+        } else {
+            $code = $order['payment_code'];
+        }
+        $code = str_replace('allsecureexchange','',$code);
+        return $code;
     }
     
     /**
@@ -776,8 +857,14 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         $setting = $this->model_setting_setting;
 
          // In case the extension is disabled, do nothing
-        if (!$setting->getValue('payment_allsecureexchange_status')) {
-            return;
+        if (!empty($this->code)) {
+            if (!$setting->getValue('payment_allsecureexchange'.$this->code.'_status')) {
+                return;
+            }
+        } else {
+            if (!$setting->getValue('payment_allsecureexchange_status')) {
+                return;
+            }
         }
         
         if (!$setting->getValue('payment_allsecureexchange_transaction_confirmation_page')) {
@@ -789,11 +876,13 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         if (!$order) {
             return;
         }
-
+        
         $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
         $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
         
         $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
+        
+        $this->code = $this->getPaymentMethodCodeFromOrder($order);
         
         $params = [
             'text_transaction_details' => $this->language->get('text_transaction_details'),
@@ -805,11 +894,18 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
             'status_failed' => $this->language->get('status_failed'),
             'text_payment_currency' => $this->language->get('text_payment_currency'),
             'text_payment_amountpaid' => $this->language->get('text_payment_amountpaid'),
+            'text_choose_make_in' => $this->language->get('text_choose_make_in'),
+            'text_installments' => $this->language->get('text_installments'),
+            'text_bank_name' => $this->language->get('text_bank_name'),
+            'text_account_owner' => $this->language->get('text_account_owner'),
+            'text_iban' => $this->language->get('text_iban'),
         ]; 
         
         try {
             $order_id = $order['order_id'];
             $uuid = $this->payment->getTransactionResponseSingle($order_id, 'uuid');
+            $installment_number = $this->payment->getTransactionResponseSingle($order_id, 'installment_number');
+
             $client = $this->getClient();
 
             $statusRequestData = new StatusRequestData();
@@ -831,17 +927,51 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                 $params['responseStatus'] = 'success';
                     
                 $result = $statusResult->getTransactionStatus();
+                $transactionId = $statusResult->getTransactionUuid() ?? NULL;
+                
+                if (strtolower($result) == 'pending') {
+                    $comment1 = $this->language->get('status_pending_create');
+                    $comment2 = $this->language->get('text_transaction_id').': ' .$transactionId;
+                    $comment = $comment1.$comment2;
+
+                    $paymentInfo = $this->get_payment_info($transactionId, $order_id);
+                    if ($paymentInfo) {
+                        $comment = $comment.$paymentInfo;
+                    }
+
+                    $order_status_id = 1;
+                    $this->model_checkout_order->addHistory((int)$order_id, $order_status_id, $comment, true);
+                }
+                            
                 $transactionType = $statusResult->getTransactionType();
                 $amount = $statusResult->getAmount();
                 $currency = $statusResult->getCurrency();
                 $cardData = $statusResult->getreturnData();
-                $cardHolder = $cardData->getcardHolder();
-                $binBrand = strtoupper($cardData->getType());
-                $expiryMonth = $cardData->getexpiryMonth();
-                $expiryYear = $cardData->getexpiryYear();
-                $firstSixDigits = $cardData->getfirstSixDigits();
-                $lastFourDigits = $cardData->getlastFourDigits();
-                $transactionId = $statusResult->getTransactionUuid() ?? NULL;
+
+                $binBrand = '';
+                $lastFourDigits = '';
+
+                if (method_exists($cardData, 'getType')) {
+                    $binBrand = strtoupper($cardData->getType());
+                }
+                if (method_exists($cardData, 'getlastFourDigits')) {
+                    $lastFourDigits = $cardData->getlastFourDigits();
+                }
+
+                $bankName = '';
+                $accountOwner = '';
+                $iban = '';
+
+                if (method_exists($cardData, 'getAccountOwner')) {
+                    $accountOwner = strtoupper($cardData->getAccountOwner());
+                }
+                if (method_exists($cardData, 'getBankName')) {
+                    $bankName = $cardData->getBankName();
+                }
+                if (method_exists($cardData, 'getIban')) {
+                    $iban = $cardData->getIban();
+                }
+                
                 $extraData = $statusResult->getextraData();
 
                 if ( isset($extraData['authCode']) ) {
@@ -861,6 +991,10 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                 $params['timestamp'] = $timestamp;
                 $params['transactionCurrency'] = $currency;
                 $params['transactionAmount'] = $amount;
+                $params['installment_number'] = $installment_number;
+                $params['accountOwner'] = $accountOwner;
+                $params['bankName'] = $bankName;
+                $params['iban'] = $iban;
             }
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
@@ -881,7 +1015,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
      * 
      * @return mixed
      */
-    public function get_payment_info($uuid)
+    public function get_payment_info($uuid, $order_id)
     {
         $this->load->model('setting/setting');
         $setting = $this->model_setting_setting;
@@ -889,8 +1023,17 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         if (!$setting->getValue('payment_allsecureexchange_transaction_email')) {
             return false;
         }
-
+        
         $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
+        
+        $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
+        
+        $this->payment = $this->model_extension_allsecureexchange_payment_allsecureexchange;
+        
+        $this->load->model('checkout/order');
+        $order = $this->model_checkout_order->getOrder($order_id);
+            
+        $this->code = $this->getPaymentMethodCodeFromOrder($order);
         
         $params = [
             'text_transaction_details' => $this->language->get('text_transaction_details'),
@@ -902,9 +1045,15 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
             'status_failed' => $this->language->get('status_failed'),
             'text_payment_currency' => $this->language->get('text_payment_currency'),
             'text_payment_amountpaid' => $this->language->get('text_payment_amountpaid'),
+            'text_choose_make_in' => $this->language->get('text_choose_make_in'),
+            'text_installments' => $this->language->get('text_installments'),
+            'text_bank_name' => $this->language->get('text_bank_name'),
+            'text_account_owner' => $this->language->get('text_account_owner'),
+            'text_iban' => $this->language->get('text_iban'),
         ]; 
         
         try {
+            $installment_number = $this->payment->getTransactionResponseSingle($order_id, 'installment_number');
             $client = $this->getClient();
 
             $statusRequestData = new StatusRequestData();
@@ -921,12 +1070,31 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                 $amount = $statusResult->getAmount();
                 $currency = $statusResult->getCurrency();
                 $cardData = $statusResult->getreturnData();
-                $cardHolder = $cardData->getcardHolder();
-                $binBrand = strtoupper($cardData->getType());
-                $expiryMonth = $cardData->getexpiryMonth();
-                $expiryYear = $cardData->getexpiryYear();
-                $firstSixDigits = $cardData->getfirstSixDigits();
-                $lastFourDigits = $cardData->getlastFourDigits();
+                
+                $binBrand = '';
+                $lastFourDigits = '';
+
+                if (method_exists($cardData, 'getType')) {
+                    $binBrand = strtoupper($cardData->getType());
+                }
+                if (method_exists($cardData, 'getlastFourDigits')) {
+                    $lastFourDigits = $cardData->getlastFourDigits();
+                }
+
+                $bankName = '';
+                $accountOwner = '';
+                $iban = '';
+
+                if (method_exists($cardData, 'getAccountOwner')) {
+                    $accountOwner = strtoupper($cardData->getAccountOwner());
+                }
+                if (method_exists($cardData, 'getBankName')) {
+                    $bankName = $cardData->getBankName();
+                }
+                if (method_exists($cardData, 'getIban')) {
+                    $iban = $cardData->getIban();
+                }
+                
                 $transactionId = $statusResult->getTransactionUuid() ?? NULL;
                 $extraData = $statusResult->getextraData();
 
@@ -947,6 +1115,10 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                 $params['timestamp'] = $timestamp;
                 $params['transactionCurrency'] = $currency;
                 $params['transactionAmount'] = $amount;
+                $params['installment_number'] = $installment_number;
+                $params['accountOwner'] = $accountOwner;
+                $params['bankName'] = $bankName;
+                $params['iban'] = $iban;
             }
         } catch (\Exception $e) {
             return false;
@@ -970,8 +1142,14 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
     public function checkout_after(&$route, &$data, &$output)
     {
         // In case the extension is disabled, do nothing
-        if (!$this->config->get('payment_allsecureexchange_status')) {
-            return;
+        if (!empty($this->code)) {
+            if (!$this->config->get('payment_allsecureexchange'.$this->code.'_status')) {
+                return;
+            }
+        } else {
+            if (!$this->config->get('payment_allsecureexchange_status')) {
+                return;
+            }
         }
         
         $testMode = 0;
@@ -998,8 +1176,14 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
     public function cart_after(&$route, &$data, &$output)
     {
          // In case the extension is disabled, do nothing
-        if (!$this->config->get('payment_allsecureexchange_status')) {
-            return;
+        if (!empty($this->code)) {
+            if (!$this->config->get('payment_allsecureexchange'.$this->code.'_status')) {
+                return;
+            }
+        } else {
+            if (!$this->config->get('payment_allsecureexchange_status')) {
+                return;
+            }
         }
 
         $egassemrorre = '';
@@ -1037,8 +1221,14 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         }
         
         // In case the extension is disabled, do nothing
-        if (!$this->config->get('payment_allsecureexchange_status')) {
-            return;
+        if (!empty($this->code)) {
+            if (!$this->config->get('payment_allsecureexchange'.$this->code.'_status')) {
+                return;
+            }
+        } else {
+            if (!$this->config->get('payment_allsecureexchange_status')) {
+                return;
+            }
         }
 
         $egassemrorre = '';

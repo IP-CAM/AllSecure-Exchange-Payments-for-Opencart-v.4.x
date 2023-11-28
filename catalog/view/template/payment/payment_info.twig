@@ -6,10 +6,24 @@
             <li class='allsecurepay-order-overview'>{{ text_transaction_codes }} <strong>{{ authCode }}</strong></li>
             {% endif %} 
             <li class='allsecurepay-order-overview'>{{ text_transaction_id }} <strong>{{ transactionId }}</strong></li>
+            {% if (lastFourDigits != '') %}
             <li class='allsecurepay-order-overview'>{{ text_card_type }} <strong>{{ binBrand }} *** {{ lastFourDigits }}</strong></li>
+            {% endif %} 
+            {% if (bankName != '') %}
+            <li class='allsecurepay-order-overview'>{{ text_bank_name }} <strong>{{ bankName }}</strong></li>
+            {% endif %} 
+            {% if (accountOwner != '') %}
+            <li class='allsecurepay-order-overview'>{{ text_account_owner }} <strong>{{ accountOwner }}</strong></li>
+            {% endif %} 
+            {% if (iban != '') %}
+            <li class='allsecurepay-order-overview'>{{ text_iban }} <strong>{{ iban }}</strong></li>
+            {% endif %} 
             <li class='allsecurepay-order-overview'>{{ text_payment_type }} <strong>{{ transactionType }}</strong></li>
             <li class='allsecurepay-order-overview'>{{ text_payment_currency }} <strong>{{ transactionCurrency }}</strong></li>
             <li class='allsecurepay-order-overview'>{{ text_payment_amountpaid }} <strong>{{ transactionAmount }}</strong></li>
+            {% if (installment_number != '') %}
+            <li class='allsecurepay-order-overview'>{{ text_choose_make_in }} <strong>{{ installment_number }} {{ text_installments }}</strong></li>
+            {% endif %} 
             <li class='allsecurepay-order-overview'>{{ text_transaction_time }} <strong>{{ timestamp }}</strong></li>
         </ul>
     {% endif %} 

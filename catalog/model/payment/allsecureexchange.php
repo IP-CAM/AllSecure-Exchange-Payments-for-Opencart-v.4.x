@@ -3,7 +3,7 @@ namespace Opencart\Catalog\Model\Extension\Allsecureexchange\Payment;
 
 class Allsecureexchange extends \Opencart\System\Engine\Model
 {
-    
+    protected $code = '';
     /**
      * Payment Module method handler
      *
@@ -14,12 +14,21 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
     public function getMethod($address)
     {
         $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
+        
+        $geo_zone_id = (int)$this->config->get('payment_allsecureexchange_geo_zone_id');
+        if (!empty($this->code)) {
+            $geo_zone_id = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_geo_zone_id');
+        }
 
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('payment_allsecureexchange_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . $geo_zone_id . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
 
         $status = $this->config->get('payment_allsecureexchange_status');
+        if (!empty($this->code)) {
+            $status = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_status');
+        }
+        
         if ($status) {
-            if (!$this->config->get('payment_allsecureexchange_geo_zone_id')) {
+            if (!$geo_zone_id) {
                     $status = true;
             } elseif ($query->num_rows) {
                     $status = true;
@@ -31,17 +40,34 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
         $method_data = array();
 
         $title = $this->config->get('payment_allsecureexchange_title');
+        if (!empty($this->code)) {
+            $title = $this->config->get('payment_allsecureexchange'.$this->code.'_title');
+        }
         $title = trim($title);
         if (empty($title)) {
             $title = $this->language->get('text_title');
+            if (!empty($this->code)) {
+                $sub_title = str_replace('_',' ',$this->code);
+                $title = $title. ' '. ucwords($sub_title);
+            }
+        }
+        
+        $code = 'allsecureexchange';
+        if (!empty($this->code)) {
+            $code = 'allsecureexchange'.$this->code;
+        }
+        
+        $sort_order = $this->config->get('payment_allsecureexchange_sort_order');
+        if (!empty($this->code)) {
+            $sort_order = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_sort_order');
         }
 
         if ($status) {
             $method_data = array(
-                'code'       => 'allsecureexchange',
+                'code'       => $code,
                 'title'      => $title,
                 'terms'      => '',
-                'sort_order' => $this->config->get('payment_allsecureexchange_sort_order')
+                'sort_order' => $sort_order
             );
         }
 
@@ -59,14 +85,19 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
     {
         $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
         
+        $geo_zone_id = (int)$this->config->get('payment_allsecureexchange_geo_zone_id');
+        if (!empty($this->code)) {
+            $geo_zone_id = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_geo_zone_id');
+        }
+        
         if ($this->cart->hasSubscription()) {
                 $status = false;
         } elseif (!$this->config->get('config_checkout_payment_address')) {
                 $status = true;
-        } elseif (!$this->config->get('payment_allsecureexchange_geo_zone_id')) {
+        } elseif (!$geo_zone_id) {
                 $status = true;
         } else {
-                $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "zone_to_geo_zone` WHERE `geo_zone_id` = '" . (int)$this->config->get('payment_allsecureexchange_geo_zone_id') . "' AND `country_id` = '" . (int)$address['country_id'] . "' AND (`zone_id` = '" . (int)$address['zone_id'] . "' OR `zone_id` = '0')");
+                $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "zone_to_geo_zone` WHERE `geo_zone_id` = '" . $geo_zone_id . "' AND `country_id` = '" . (int)$address['country_id'] . "' AND (`zone_id` = '" . (int)$address['zone_id'] . "' OR `zone_id` = '0')");
 
                 if ($query->num_rows) {
                         $status = true;
@@ -78,23 +109,55 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
         $method_data = [];
         
         $title = $this->config->get('payment_allsecureexchange_title');
+        if (!empty($this->code)) {
+            $title = $this->config->get('payment_allsecureexchange'.$this->code.'_title');
+        }
         $title = trim($title);
         if (empty($title)) {
             $title = $this->language->get('text_title');
+            if (!empty($this->code)) {
+                $sub_title = str_replace('_',' ',$this->code);
+                $title = $title. ' '. ucwords($sub_title);
+            }
         }
 
         if ($status) {
-                $option_data['allsecureexchange'] = [
-                    'code' => 'allsecureexchange.allsecureexchange',
+            $status = $this->config->get('payment_allsecureexchange_status');
+            if (!empty($this->code)) {
+                $status = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_status');
+            }
+        }
+
+        if ($status) {
+            $code = 'allsecureexchange';
+            $option_code = 'allsecureexchange.allsecureexchange';
+            if (!empty($this->code)) {
+                $code = 'allsecureexchange'.$this->code;
+                $option_code = $code.'.'.$code;
+            }
+
+            $sort_order = $this->config->get('payment_allsecureexchange_sort_order');
+            if (!empty($this->code)) {
+                $sort_order = $this->config->get('payment_allsecureexchange'.$this->code.'_sort_order');
+                $option_data[$code] = [
+                    'code' => $option_code,
                     'name' => $title
                 ];
-
-                $method_data = [
-                    'code'       => 'allsecureexchange',
-                    'name'       => $title,
-                    'option'     => $option_data,
-                    'sort_order' => $this->config->get('payment_allsecureexchange_sort_order')
+            } else {
+                $option_data['allsecureexchange'] = [
+                    'code' => $option_code,
+                    'name' => $title
                 ];
+            }
+            
+            
+
+            $method_data = [
+                'code'       => $code,
+                'name'       => $title,
+                'option'     => $option_data,
+                'sort_order' => $sort_order
+            ];
         }
 
         return $method_data;

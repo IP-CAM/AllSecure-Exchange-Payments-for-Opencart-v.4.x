@@ -14,16 +14,255 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
     private $error = array();
     const STATE_VOID = 16;
     const STATE_REFUND = 11;
+    
+    protected $code = '';
 
     public function index() {
-        $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
+        if (!empty($this->code)) {
+            $this->additionalMethodIndex();
+        } else {
+            $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
 
-        $this->document->setTitle($this->language->get('heading_title'));
+            $this->document->setTitle($this->language->get('heading_title'));
+
+            $this->load->model('setting/setting');
+
+            if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
+                $this->model_setting_setting->editSetting('payment_allsecureexchange', $this->request->post);
+                $this->session->data['success'] = $this->language->get('text_success');
+                $data['success'] = $this->session->data['success'];
+            }
+
+            if (isset($this->error['warning'])) {
+                $data['error_warning'] = $this->error['warning'];
+            } else {
+                $data['error_warning'] = '';
+            }
+
+            if (isset($this->error['api_user'])) {
+                $data['error_api_user'] = $this->error['api_user'];
+            } else {
+                $data['error_api_user'] = '';
+            }
+
+            if (isset($this->error['api_password'])) {
+                $data['error_api_password'] = $this->error['api_password'];
+            } else {
+                $data['error_api_password'] = '';
+            }
+
+            if (isset($this->error['api_key'])) {
+                $data['error_api_key'] = $this->error['api_key'];
+            } else {
+                $data['error_api_key'] = '';
+            }
+
+            if (isset($this->error['api_secret'])) {
+                $data['error_api_secret'] = $this->error['api_secret'];
+            } else {
+                $data['error_api_secret'] = '';
+            }
+
+            if (isset($this->error['integrator_key'])) {
+                $data['error_integrator_key'] = $this->error['integrator_key'];
+            } else {
+                $data['error_integrator_key'] = '';
+            }
+
+            if (isset($this->error['type_supported'])) {
+                $data['error_card_supported'] = $this->error['type_supported'];
+            } else {
+                $data['error_card_supported'] = '';
+            }
+
+            $data['breadcrumbs'] = array();
+
+            $data['breadcrumbs'][] = array(
+                'text' => $this->language->get('text_home'),
+                'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
+            );
+
+            $data['breadcrumbs'][] = array(
+                'text' => $this->language->get('text_extension'),
+                'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true)
+            );
+
+            $data['breadcrumbs'][] = array(
+                'text' => $this->language->get('heading_title'),
+                'href' => $this->url->link('extension/allsecureexchange/payment/allsecureexchange', 'user_token=' . $this->session->data['user_token'], true)
+            );
+
+            $data['action'] = $this->url->link('extension/allsecureexchange/payment/allsecureexchange', 'user_token=' . $this->session->data['user_token'], true);
+
+            $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
+
+            if (isset($this->request->post['payment_allsecureexchange_api_user'])) {
+                $data['payment_allsecureexchange_api_user'] = $this->request->post['payment_allsecureexchange_api_user'];
+            } else {
+                $data['payment_allsecureexchange_api_user'] = $this->config->get('payment_allsecureexchange_api_user');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_api_password'])) {
+                $data['payment_allsecureexchange_api_password'] = $this->request->post['payment_allsecureexchange_api_password'];
+            } else {
+                $data['payment_allsecureexchange_api_password'] = $this->config->get('payment_allsecureexchange_api_password');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_api_key'])) {
+                $data['payment_allsecureexchange_api_key'] = $this->request->post['payment_allsecureexchange_api_key'];
+            } else {
+                $data['payment_allsecureexchange_api_key'] = $this->config->get('payment_allsecureexchange_api_key');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_api_secret'])) {
+                $data['payment_allsecureexchange_api_secret'] = $this->request->post['payment_allsecureexchange_api_secret'];
+            } else {
+                $data['payment_allsecureexchange_api_secret'] = $this->config->get('payment_allsecureexchange_api_secret');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_integrator_key'])) {
+                $data['payment_allsecureexchange_integrator_key'] = $this->request->post['payment_allsecureexchange_integrator_key'];
+            } else {
+                $data['payment_allsecureexchange_integrator_key'] = $this->config->get('payment_allsecureexchange_integrator_key');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_mode'])) {
+                $data['payment_allsecureexchange_mode'] = $this->request->post['payment_allsecureexchange_mode'];
+            } else {
+                $data['payment_allsecureexchange_mode'] = $this->config->get('payment_allsecureexchange_mode');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_order_status_id'])) {
+                $data['payment_allsecureexchange_order_status_id'] = $this->request->post['payment_allsecureexchange_order_status_id'];
+            } else {
+                $data['payment_allsecureexchange_order_status_id'] = $this->config->get('payment_allsecureexchange_order_status_id');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_logging'])) {
+                $data['payment_allsecureexchange_logging'] = $this->request->post['payment_allsecureexchange_logging'];
+            } else {
+                $data['payment_allsecureexchange_logging'] = $this->config->get('payment_allsecureexchange_logging');
+            }
+            if (isset($this->request->post['payment_allsecureexchange_title'])) {
+                $data['payment_allsecureexchange_title'] = $this->request->post['payment_allsecureexchange_title'];
+            } else {
+                $data['payment_allsecureexchange_title'] = $this->config->get('payment_allsecureexchange_title');
+            }
+
+            $data['cards_supported'] = $this->getCardsSupported();
+            if (isset($this->request->post['payment_allsecureexchange_card_supported'])) {
+                $data['payment_allsecureexchange_card_supported'] = $this->request->post['payment_allsecureexchange_card_supported'];
+            } else {
+                $payment_allsecureexchange_card_supported = $this->config->get('payment_allsecureexchange_card_supported');
+                if (empty($payment_allsecureexchange_card_supported)) {
+                    $payment_allsecureexchange_card_supported = [];
+                }
+                $data['payment_allsecureexchange_card_supported'] = $payment_allsecureexchange_card_supported;
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_enable_installment'])) {
+                $data['payment_allsecureexchange_enable_installment'] = $this->request->post['payment_allsecureexchange_enable_installment'];
+            } else {
+                $data['payment_allsecureexchange_enable_installment'] = $this->config->get('payment_allsecureexchange_enable_installment');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_installment_bins'])) {
+                $data['payment_allsecureexchange_installment_bins'] = $this->request->post['payment_allsecureexchange_installment_bins'];
+            } else {
+                $payment_allsecureexchange_installment_bins = $this->config->get('payment_allsecureexchange_installment_bins');
+                if (empty($payment_allsecureexchange_installment_bins)) {
+                    $payment_allsecureexchange_installment_bins = [];
+                }
+                $data['payment_allsecureexchange_installment_bins'] = $payment_allsecureexchange_installment_bins;
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_allowed_installments'])) {
+                $data['payment_allsecureexchange_allowed_installments'] = $this->request->post['payment_allsecureexchange_allowed_installments'];
+            } else {
+                $payment_allsecureexchange_allowed_installments = $this->config->get('payment_allsecureexchange_allowed_installments');
+                if (empty($payment_allsecureexchange_allowed_installments)) {
+                    $payment_allsecureexchange_allowed_installments = [];
+                }
+                $data['payment_allsecureexchange_allowed_installments'] = $payment_allsecureexchange_allowed_installments;
+            }
+
+            $this->load->model('localisation/order_status');
+
+            $data['order_statuses'] = $this->getNewOrderStatuses($this->model_localisation_order_status->getOrderStatuses());
+
+            if (isset($this->request->post['payment_allsecureexchange_geo_zone_id'])) {
+                $data['payment_allsecureexchange_geo_zone_id'] = $this->request->post['payment_allsecureexchange_geo_zone_id'];
+            } else {
+                $data['payment_allsecureexchange_geo_zone_id'] = $this->config->get('payment_allsecureexchange_geo_zone_id');
+            }
+
+            $this->load->model('localisation/geo_zone');
+
+            $data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
+
+            if (isset($this->request->post['payment_allsecureexchange_status'])) {
+                $data['payment_allsecureexchange_status'] = $this->request->post['payment_allsecureexchange_status'];
+            } else {
+                $data['payment_allsecureexchange_status'] = $this->config->get('payment_allsecureexchange_status');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_sort_order'])) {
+                $data['payment_allsecureexchange_sort_order'] = $this->request->post['payment_allsecureexchange_sort_order'];
+            } else {
+                $data['payment_allsecureexchange_sort_order'] = $this->config->get('payment_allsecureexchange_sort_order');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_checkout'])) {
+                $data['payment_allsecureexchange_checkout'] = $this->request->post['payment_allsecureexchange_checkout'];
+            } else {
+                $data['payment_allsecureexchange_checkout'] = $this->config->get('payment_allsecureexchange_checkout');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_transaction_type'])) {
+                $data['payment_allsecureexchange_transaction_type'] = $this->request->post['payment_allsecureexchange_transaction_type'];
+            } else {
+                $data['payment_allsecureexchange_transaction_type'] = $this->config->get('payment_allsecureexchange_transaction_type');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_transaction_email'])) {
+                $data['payment_allsecureexchange_transaction_email'] = $this->request->post['payment_allsecureexchange_transaction_email'];
+            } else {
+                $data['payment_allsecureexchange_transaction_email'] = $this->config->get('payment_allsecureexchange_transaction_email');
+            }
+
+            if (isset($this->request->post['payment_allsecureexchange_transaction_confirmation_page'])) {
+                $data['payment_allsecureexchange_transaction_confirmation_page'] = $this->request->post['payment_allsecureexchange_transaction_confirmation_page'];
+            } else {
+                $data['payment_allsecureexchange_transaction_confirmation_page'] = $this->config->get('payment_allsecureexchange_transaction_confirmation_page');
+            }
+
+            $data['header'] = $this->load->controller('common/header');
+            $data['column_left'] = $this->load->controller('common/column_left');
+            $data['footer'] = $this->load->controller('common/footer');
+
+
+            $this->response->setOutput($this->load->view('extension/allsecureexchange/payment/allsecureexchange_settings', $data));
+        }
+    }
+    
+    public function additionalMethodIndex()
+    {
+        $this->load->language('extension/allsecureexchange/payment/allsecureexchange'.$this->code);
+        $title = $this->language->get('heading_title');
+        $text_edit = $this->language->get('text_edit');
+        
+        $this->load->language('extension/allsecureexchange/payment/allsecureexchange');
+        
+        $data['code'] = $this->code;
+
+        $this->document->setTitle($title);
+        $data['heading_title'] = $title;
+        $data['text_edit'] = $text_edit;
 
         $this->load->model('setting/setting');
 
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-            $this->model_setting_setting->editSetting('payment_allsecureexchange', $this->request->post);
+            $this->model_setting_setting->editSetting('payment_allsecureexchange'.$this->code, $this->request->post);
             $this->session->data['success'] = $this->language->get('text_success');
             $data['success'] = $this->session->data['success'];
         }
@@ -32,18 +271,6 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
             $data['error_warning'] = $this->error['warning'];
         } else {
             $data['error_warning'] = '';
-        }
-        
-        if (isset($this->error['api_user'])) {
-            $data['error_api_user'] = $this->error['api_user'];
-        } else {
-            $data['error_api_user'] = '';
-        }
-        
-        if (isset($this->error['api_password'])) {
-            $data['error_api_password'] = $this->error['api_password'];
-        } else {
-            $data['error_api_password'] = '';
         }
         
         if (isset($this->error['api_key'])) {
@@ -56,18 +283,6 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
             $data['error_api_secret'] = $this->error['api_secret'];
         } else {
             $data['error_api_secret'] = '';
-        }
-
-        if (isset($this->error['integrator_key'])) {
-            $data['error_integrator_key'] = $this->error['integrator_key'];
-        } else {
-            $data['error_integrator_key'] = '';
-        }
-
-        if (isset($this->error['type_supported'])) {
-            $data['error_card_supported'] = $this->error['type_supported'];
-        } else {
-            $data['error_card_supported'] = '';
         }
 
         $data['breadcrumbs'] = array();
@@ -83,126 +298,52 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         );
 
         $data['breadcrumbs'][] = array(
-            'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('extension/allsecureexchange/payment/allsecureexchange', 'user_token=' . $this->session->data['user_token'], true)
+            'text' => $title,
+            'href' => $this->url->link('extension/allsecureexchange/payment/allsecureexchange'.$this->code, 'user_token=' . $this->session->data['user_token'], true)
         );
 
-        $data['action'] = $this->url->link('extension/allsecureexchange/payment/allsecureexchange', 'user_token=' . $this->session->data['user_token'], true);
+        $data['action'] = $this->url->link('extension/allsecureexchange/payment/allsecureexchange'.$this->code, 'user_token=' . $this->session->data['user_token'], true);
 
         $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
-        
-        if (isset($this->request->post['payment_allsecureexchange_api_user'])) {
-            $data['payment_allsecureexchange_api_user'] = $this->request->post['payment_allsecureexchange_api_user'];
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_api_key'])) {
+            $data['payment_allsecureexchange_api_key'] = $this->request->post['payment_allsecureexchange'.$this->code.'_api_key'];
         } else {
-            $data['payment_allsecureexchange_api_user'] = $this->config->get('payment_allsecureexchange_api_user');
+            $data['payment_allsecureexchange_api_key'] = $this->config->get('payment_allsecureexchange'.$this->code.'_api_key');
         }
 
-        if (isset($this->request->post['payment_allsecureexchange_api_password'])) {
-            $data['payment_allsecureexchange_api_password'] = $this->request->post['payment_allsecureexchange_api_password'];
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_api_secret'])) {
+            $data['payment_allsecureexchange_api_secret'] = $this->request->post['payment_allsecureexchange'.$this->code.'_api_secret'];
         } else {
-            $data['payment_allsecureexchange_api_password'] = $this->config->get('payment_allsecureexchange_api_password');
-        }
-
-        if (isset($this->request->post['payment_allsecureexchange_api_key'])) {
-            $data['payment_allsecureexchange_api_key'] = $this->request->post['payment_allsecureexchange_api_key'];
-        } else {
-            $data['payment_allsecureexchange_api_key'] = $this->config->get('payment_allsecureexchange_api_key');
-        }
-
-        if (isset($this->request->post['payment_allsecureexchange_api_secret'])) {
-            $data['payment_allsecureexchange_api_secret'] = $this->request->post['payment_allsecureexchange_api_secret'];
-        } else {
-            $data['payment_allsecureexchange_api_secret'] = $this->config->get('payment_allsecureexchange_api_secret');
+            $data['payment_allsecureexchange_api_secret'] = $this->config->get('payment_allsecureexchange'.$this->code.'_api_secret');
         }
         
-        if (isset($this->request->post['payment_allsecureexchange_integrator_key'])) {
-            $data['payment_allsecureexchange_integrator_key'] = $this->request->post['payment_allsecureexchange_integrator_key'];
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_title'])) {
+            $data['payment_allsecureexchange_title'] = $this->request->post['payment_allsecureexchange'.$this->code.'_title'];
         } else {
-            $data['payment_allsecureexchange_integrator_key'] = $this->config->get('payment_allsecureexchange_integrator_key');
+            $data['payment_allsecureexchange_title'] = $this->config->get('payment_allsecureexchange'.$this->code.'_title');
         }
 
-        if (isset($this->request->post['payment_allsecureexchange_mode'])) {
-            $data['payment_allsecureexchange_mode'] = $this->request->post['payment_allsecureexchange_mode'];
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_geo_zone_id'])) {
+            $data['payment_allsecureexchange_geo_zone_id'] = $this->request->post['payment_allsecureexchange'.$this->code.'_geo_zone_id'];
         } else {
-            $data['payment_allsecureexchange_mode'] = $this->config->get('payment_allsecureexchange_mode');
-        }
-
-        if (isset($this->request->post['payment_allsecureexchange_order_status_id'])) {
-            $data['payment_allsecureexchange_order_status_id'] = $this->request->post['payment_allsecureexchange_order_status_id'];
-        } else {
-            $data['payment_allsecureexchange_order_status_id'] = $this->config->get('payment_allsecureexchange_order_status_id');
-        }
-
-        if (isset($this->request->post['payment_allsecureexchange_logging'])) {
-            $data['payment_allsecureexchange_logging'] = $this->request->post['payment_allsecureexchange_logging'];
-        } else {
-            $data['payment_allsecureexchange_logging'] = $this->config->get('payment_allsecureexchange_logging');
-        }
-        if (isset($this->request->post['payment_allsecureexchange_title'])) {
-            $data['payment_allsecureexchange_title'] = $this->request->post['payment_allsecureexchange_title'];
-        } else {
-            $data['payment_allsecureexchange_title'] = $this->config->get('payment_allsecureexchange_title');
-        }
-
-        $data['cards_supported'] = $this->getCardsSupported();
-        if (isset($this->request->post['payment_allsecureexchange_card_supported'])) {
-            $data['payment_allsecureexchange_card_supported'] = $this->request->post['payment_allsecureexchange_card_supported'];
-        } else {
-            $payment_allsecureexchange_card_supported = $this->config->get('payment_allsecureexchange_card_supported');
-            if (empty($payment_allsecureexchange_card_supported)) {
-                $payment_allsecureexchange_card_supported = [];
-            }
-            $data['payment_allsecureexchange_card_supported'] = $payment_allsecureexchange_card_supported;
-        }
-
-        $this->load->model('localisation/order_status');
-
-        $data['order_statuses'] = $this->getNewOrderStatuses($this->model_localisation_order_status->getOrderStatuses());
-
-        if (isset($this->request->post['payment_allsecureexchange_geo_zone_id'])) {
-            $data['payment_allsecureexchange_geo_zone_id'] = $this->request->post['payment_allsecureexchange_geo_zone_id'];
-        } else {
-            $data['payment_allsecureexchange_geo_zone_id'] = $this->config->get('payment_allsecureexchange_geo_zone_id');
+            $data['payment_allsecureexchange_geo_zone_id'] = $this->config->get('payment_allsecureexchange'.$this->code.'_geo_zone_id');
         }
 
         $this->load->model('localisation/geo_zone');
 
         $data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
-        if (isset($this->request->post['payment_allsecureexchange_status'])) {
-            $data['payment_allsecureexchange_status'] = $this->request->post['payment_allsecureexchange_status'];
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_status'])) {
+            $data['payment_allsecureexchange_status'] = $this->request->post['payment_allsecureexchange'.$this->code.'_status'];
         } else {
-            $data['payment_allsecureexchange_status'] = $this->config->get('payment_allsecureexchange_status');
+            $data['payment_allsecureexchange_status'] = $this->config->get('payment_allsecureexchange'.$this->code.'_status');
         }
 
-        if (isset($this->request->post['payment_allsecureexchange_sort_order'])) {
-            $data['payment_allsecureexchange_sort_order'] = $this->request->post['payment_allsecureexchange_sort_order'];
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_sort_order'])) {
+            $data['payment_allsecureexchange_sort_order'] = $this->request->post['payment_allsecureexchange'.$this->code.'_sort_order'];
         } else {
-            $data['payment_allsecureexchange_sort_order'] = $this->config->get('payment_allsecureexchange_sort_order');
-        }
-        
-        if (isset($this->request->post['payment_allsecureexchange_checkout'])) {
-            $data['payment_allsecureexchange_checkout'] = $this->request->post['payment_allsecureexchange_checkout'];
-        } else {
-            $data['payment_allsecureexchange_checkout'] = $this->config->get('payment_allsecureexchange_checkout');
-        }
-        
-        if (isset($this->request->post['payment_allsecureexchange_transaction_type'])) {
-            $data['payment_allsecureexchange_transaction_type'] = $this->request->post['payment_allsecureexchange_transaction_type'];
-        } else {
-            $data['payment_allsecureexchange_transaction_type'] = $this->config->get('payment_allsecureexchange_transaction_type');
-        }
-        
-        if (isset($this->request->post['payment_allsecureexchange_transaction_email'])) {
-            $data['payment_allsecureexchange_transaction_email'] = $this->request->post['payment_allsecureexchange_transaction_email'];
-        } else {
-            $data['payment_allsecureexchange_transaction_email'] = $this->config->get('payment_allsecureexchange_transaction_email');
-        }
-        
-        if (isset($this->request->post['payment_allsecureexchange_transaction_confirmation_page'])) {
-            $data['payment_allsecureexchange_transaction_confirmation_page'] = $this->request->post['payment_allsecureexchange_transaction_confirmation_page'];
-        } else {
-            $data['payment_allsecureexchange_transaction_confirmation_page'] = $this->config->get('payment_allsecureexchange_transaction_confirmation_page');
+            $data['payment_allsecureexchange_sort_order'] = $this->config->get('payment_allsecureexchange'.$this->code.'_sort_order');
         }
 
         $data['header'] = $this->load->controller('common/header');
@@ -210,37 +351,58 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         $data['footer'] = $this->load->controller('common/footer');
 
 
-        $this->response->setOutput($this->load->view('extension/allsecureexchange/payment/allsecureexchange_settings', $data));
+        $this->response->setOutput($this->load->view('extension/allsecureexchange/payment/allsecureexchange_additional', $data));
     }
 
     protected function validate()
     {
-        if (!$this->user->hasPermission('modify', 'extension/allsecureexchange/payment/allsecureexchange')) {
+        if (!empty($this->code)) {
+            return $this->additionalMethodValidate();
+        } else {
+            if (!$this->user->hasPermission('modify', 'extension/allsecureexchange/payment/allsecureexchange')) {
+                $this->error['warning'] = $this->language->get('error_permission');
+            }
+
+            if (!$this->request->post['payment_allsecureexchange_api_user']) {
+                $this->error['api_user'] = $this->language->get('error_api_user');
+            }
+
+            if (!$this->request->post['payment_allsecureexchange_api_password']) {
+                $this->error['api_password'] = $this->language->get('error_api_password');
+            }
+
+            if (!$this->request->post['payment_allsecureexchange_api_key']) {
+                $this->error['api_key'] = $this->language->get('error_api_key');
+            }
+
+            if (!$this->request->post['payment_allsecureexchange_api_secret']) {
+                $this->error['api_secret'] = $this->language->get('error_api_secret');
+            }
+
+            if (!$this->request->post['payment_allsecureexchange_integrator_key']) {
+                $this->error['integrator_key'] = $this->language->get('error_integrator_key');
+            }
+
+            if (!isset($_POST['payment_allsecureexchange_card_supported'])) {
+                $this->error['type_supported'] = $this->language->get('error_card_supported');
+            }
+
+            return !$this->error;
+        } 
+    }
+    
+    public function additionalMethodValidate()
+    {
+        if (!$this->user->hasPermission('modify', 'extension/allsecureexchange/payment/allsecureexchange'.$this->code)) {
             $this->error['warning'] = $this->language->get('error_permission');
         }
         
-        if (!$this->request->post['payment_allsecureexchange_api_user']) {
-            $this->error['api_user'] = $this->language->get('error_api_user');
-        }
-
-        if (!$this->request->post['payment_allsecureexchange_api_password']) {
-            $this->error['api_password'] = $this->language->get('error_api_password');
-        }
-
-        if (!$this->request->post['payment_allsecureexchange_api_key']) {
+        if (!$this->request->post['payment_allsecureexchange'.$this->code.'_api_key']) {
             $this->error['api_key'] = $this->language->get('error_api_key');
         }
 
-        if (!$this->request->post['payment_allsecureexchange_api_secret']) {
+        if (!$this->request->post['payment_allsecureexchange'.$this->code.'_api_secret']) {
             $this->error['api_secret'] = $this->language->get('error_api_secret');
-        }
-        
-        if (!$this->request->post['payment_allsecureexchange_integrator_key']) {
-            $this->error['integrator_key'] = $this->language->get('error_integrator_key');
-        }
-
-        if (!isset($_POST['payment_allsecureexchange_card_supported'])) {
-            $this->error['type_supported'] = $this->language->get('error_card_supported');
         }
 
         return !$this->error;
@@ -312,14 +474,18 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
     
     public function install()
     {
-        $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
-        $this->model_extension_allsecureexchange_payment_allsecureexchange->install();
+        if (empty($this->code)) {
+            $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
+            $this->model_extension_allsecureexchange_payment_allsecureexchange->install();
+        }
     }
 
     public function uninstall()
     {
-        $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
-        $this->model_extension_allsecureexchange_payment_allsecureexchange->uninstall();
+        if (empty($this->code)) {
+            $this->load->model('extension/allsecureexchange/payment/allsecureexchange');
+            $this->model_extension_allsecureexchange_payment_allsecureexchange->uninstall();
+        }
     }
     
     /**
@@ -355,10 +521,22 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         if (!empty($api_key)) {
             $api_key = trim($api_key);
         }
+        if (!empty($this->code)) {
+            $api_key = $this->config->get('payment_allsecureexchange'.$this->code.'_api_key');
+            if (!empty($api_key)) {
+                $api_key = trim($api_key);
+            }
+        }
         
         $api_secret = $this->config->get('payment_allsecureexchange_api_secret');
         if (!empty($api_secret)) {
             $api_secret = trim($api_secret);
+        }
+        if (!empty($this->code)) {
+            $api_secret = $this->config->get('payment_allsecureexchange'.$this->code.'_api_secret');
+            if (!empty($api_secret)) {
+                $api_secret = trim($api_secret);
+            }
         }
 
         $client = new AllsecureClient(
@@ -711,6 +889,21 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         exit;
     }
     
+    public function getPaymentMethodCodeFromOrder($order)
+    {
+        $code = '';
+        if ($this->payment->isVersion402()) {
+            $method_code = $order['payment_method']['code'];
+            $codes = explode('.',$method_code);
+            $code = $codes[0];
+            
+        } else {
+            $code = $order['payment_code'];
+        }
+        $code = str_replace('allsecureexchange','',$code);
+        return $code;
+    }
+    
      /**
      * Refund payment
      *
@@ -738,6 +931,8 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
             }
 
             $order = $this->model_sale_order->getOrder($order_id);
+            
+            $this->code = $this->getPaymentMethodCodeFromOrder($order);
 
             $amount = (float)$this->currency->format($order['total'], $order['currency_code'], $order['currency_value'], false);
             $amount = round($amount, 2);

@@ -35,6 +35,7 @@ $_['status_webhook_wait'] = 'Order is just created and waiting for the payment c
 $_['status_finished_capture'] = 'Allsecure Exchange payment is successfully captured. ';
 $_['status_finished_void'] = 'Allsecure Exchange payment is successfully voided. ';
 $_['status_finished_refund'] = 'Allsecure Exchange payment is successfully refunded. ';
+$_['status_pending_create'] = 'Allsecure Exchange payment request is created successfully and but payment status received as pending.';
 
 $_['entry_optional'] = '';
 
@@ -100,3 +101,12 @@ $_['error_7040'] = 'The scheduleId is not valid or does not match to the connect
 $_['error_7050'] = 'The startDateTime is invalid or older than 24 hours';
 $_['error_7060'] = 'The continueDateTime is invalid or older than 24 hours';
 $_['error_7070'] = 'The status of the schedule is not valid for the requested operation';
+
+//More texts
+$_['text_pay_in_installments'] = 'Pay in Installments';
+$_['text_select_no_of_installments'] = 'Select No. of installments';
+$_['text_choose_make_in'] = 'Chose to make payment in';
+$_['text_installments'] = 'installments';
+$_['text_bank_name'] = 'Bank Name';
+$_['text_account_owner'] = 'Account Owner';
+$_['text_iban'] = 'IBAN/Account Number';

@@ -160,3 +160,15 @@ $_['error_7040'] = 'The scheduleId is not valid or does not match to the connect
 $_['error_7050'] = 'The startDateTime is invalid or older than 24 hours';
 $_['error_7060'] = 'The continueDateTime is invalid or older than 24 hours';
 $_['error_7070'] = 'The status of the schedule is not valid for the requested operation';
+
+//More texts
+$_['tab_general_settings'] = 'General Settings';
+$_['tab_installment_settings'] = 'Installment Settings';
+$_['txt_enable_installment_payments'] = 'Enable Installment Payments';
+$_['txt_enter_installment_bin_info'] = 'Enter Installment Eligible BIN Information';
+$_['txt_installment_bin'] = 'BIN';
+$_['button_remove'] = 'Remove';
+$_['txt_allowed_installments'] = 'Allowed Installments';
+$_['txt_tip_comma_separated'] = 'Enter comma separated eg: 3,6,9,12';
+$_['button_addnew'] = 'Add New';
+$_['txt_allowed_max'] = 'Allowed to add maximum';
