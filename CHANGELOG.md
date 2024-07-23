@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.0.4 (2024-07-23)
+### Fix
+- Upgrade version (separated payment methods)
+
 ## v1.0.3 (2023-11-28)
 ### Fix
 - Additional payment method
