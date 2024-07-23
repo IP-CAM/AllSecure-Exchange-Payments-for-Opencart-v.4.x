@@ -155,8 +155,13 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                 if ($result->isSuccess()) {
                     $gatewayReferenceId = $result->getUuid();
 
+                    $mode = $this->config->get('payment_allsecureexchange_mode');
+                    if (!empty($this->code)) {
+                        $mode = $this->config->get('payment_allsecureexchange'.$this->code.'_mode');
+                    }
+
                     $this->payment->updateTransaction($order_id, 'transaction_id', $gatewayReferenceId);
-                    $this->payment->updateTransaction($order_id, 'transaction_mode', $this->config->get('payment_allsecureexchange_mode'));
+                    $this->payment->updateTransaction($order_id, 'transaction_mode', $mode);
                     $this->payment->updateTransaction($order_id, 'checkout_type', $checkoutType);
                     $this->payment->updateTransaction($order_id, 'transaction_type', $action);
                     $this->payment->updateTransaction($order_id, 'response', json_encode($result->toArray()));
@@ -221,6 +226,13 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                             }
                             
                             $order_status_id = (int)$this->config->get('payment_allsecureexchange_order_status_id');
+                            if (!empty($this->code)) {
+                                $order_status_id2 = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_order_status_id');
+                                if ($order_status_id2 > 0) {
+                                    $order_status_id = $order_status_id2;
+                                }
+                            }
+
                             $this->model_checkout_order->addHistory((int)$order_id, $order_status_id, $comment, true);
                             $json['redirect'] = $this->url->link('checkout/success', 'order_id=' . $order_id, true);
                         } else {
@@ -240,6 +252,7 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                         }
                     }
                 } else {
+                    //print_r($result);exit;
                     // handle error
                     $error = $result->getFirstError();
                     $errorCode = $error->getCode();
@@ -446,6 +459,13 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                             }
                         
                             $order_status_id = (int)$this->config->get('payment_allsecureexchange_order_status_id');
+                            if (!empty($this->code)) {
+                                $order_status_id2 = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_order_status_id');
+                                if ($order_status_id2 > 0) {
+                                    $order_status_id = $order_status_id2;
+                                }
+                            }
+
                             $this->model_checkout_order->addHistory((int)$order_id, $order_status_id, $comment, true);
                         } else if ($callbackResult->getTransactionType() == AllsecureCallbackResult::TYPE_CAPTURE) {
                             //result capture
@@ -454,6 +474,13 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
                             $comment2 = $this->language->get('text_transaction_id').': ' .$gatewayReferenceId;
                             $comment = $comment1.$comment2;
                             $order_status_id = (int)$this->config->get('payment_allsecureexchange_order_status_id');
+                            if (!empty($this->code)) {
+                                $order_status_id2 = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_order_status_id');
+                                if ($order_status_id2 > 0) {
+                                    $order_status_id = $order_status_id2;
+                                }
+                            }
+
                             $this->model_checkout_order->addHistory((int)$order_id, $order_status_id, $comment);
                         } else if ($callbackResult->getTransactionType() == AllsecureCallbackResult::TYPE_VOID) {
                             //result void
@@ -541,6 +568,11 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         if ($this->config->get('payment_allsecureexchange_mode') == 'test') {
             $testMode = true;
         }
+        if (!empty($this->code)) {
+            if ($this->config->get('payment_allsecureexchange'.$this->code.'_mode') == 'test') {
+                $testMode = true;
+            }
+        }
         
         if ($testMode) {
             AllsecureClient::setApiUrl($this->getTestApiUrl());
@@ -552,10 +584,22 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         if (!empty($api_user)) {
             $api_user = trim($api_user);
         }
+        if (!empty($this->code)) {
+            $api_user = $this->config->get('payment_allsecureexchange'.$this->code.'_api_user');
+            if (!empty($api_user)) {
+                $api_user = trim($api_user);
+            }
+        }
         
         $api_password = $this->config->get('payment_allsecureexchange_api_password');
         if (!empty($api_password)) {
             $api_password = htmlspecialchars_decode($api_password);
+        }
+        if (!empty($this->code)) {
+            $api_password = $this->config->get('payment_allsecureexchange'.$this->code.'_api_password');
+            if (!empty($api_password)) {
+                $api_password = htmlspecialchars_decode($api_password);
+            }
         }
         
         $api_key = $this->config->get('payment_allsecureexchange_api_key');
@@ -1155,6 +1199,11 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller
         $testMode = 0;
         if ($this->config->get('payment_allsecureexchange_mode') == 'test') {
             $testMode = 1;
+        }
+		if (!empty($this->code)) {
+            if ($this->config->get('payment_allsecureexchange'.$this->code.'_mode') == 'test') {
+                $testMode = 1;
+            }
         }
         
         $params['test_mode'] = $testMode;

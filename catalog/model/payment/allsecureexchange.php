@@ -302,6 +302,9 @@ class Allsecureexchange extends \Opencart\System\Engine\Model
     public function log($content)
     {
         $debug = $this->config->get('payment_allsecureexchange_logging');
+		if (!empty($this->code)) {
+			$debug = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_logging');
+		}
         if ($debug == true) {
             $file = DIR_STORAGE.'logs/allsecureexchange.log';
             $fp = fopen($file, 'a+');

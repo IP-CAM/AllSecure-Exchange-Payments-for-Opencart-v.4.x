@@ -272,6 +272,18 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         } else {
             $data['error_warning'] = '';
         }
+
+        if (isset($this->error['api_user'])) {
+            $data['error_api_user'] = $this->error['api_user'];
+        } else {
+            $data['error_api_user'] = '';
+        }
+
+        if (isset($this->error['api_password'])) {
+            $data['error_api_password'] = $this->error['api_password'];
+        } else {
+            $data['error_api_password'] = '';
+        }
         
         if (isset($this->error['api_key'])) {
             $data['error_api_key'] = $this->error['api_key'];
@@ -305,6 +317,40 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         $data['action'] = $this->url->link('extension/allsecureexchange/payment/allsecureexchange'.$this->code, 'user_token=' . $this->session->data['user_token'], true);
 
         $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
+
+        $this->load->model('localisation/order_status');
+
+        $data['order_statuses'] = $this->getNewOrderStatuses($this->model_localisation_order_status->getOrderStatuses());
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_api_user'])) {
+            $data['payment_allsecureexchange_api_user'] = $this->request->post['payment_allsecureexchange'.$this->code.'_api_user'];
+        } else {
+            $data['payment_allsecureexchange_api_user'] = $this->config->get('payment_allsecureexchange'.$this->code.'_api_user');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_api_password'])) {
+            $data['payment_allsecureexchange_api_password'] = $this->request->post['payment_allsecureexchange'.$this->code.'_api_password'];
+        } else {
+            $data['payment_allsecureexchange_api_password'] = $this->config->get('payment_allsecureexchange'.$this->code.'_api_password');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_mode'])) {
+            $data['payment_allsecureexchange_mode'] = $this->request->post['payment_allsecureexchange'.$this->code.'_mode'];
+        } else {
+            $data['payment_allsecureexchange_mode'] = $this->config->get('payment_allsecureexchange'.$this->code.'_mode');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_order_status_id'])) {
+            $data['payment_allsecureexchange_order_status_id'] = $this->request->post['payment_allsecureexchange'.$this->code.'_order_status_id'];
+        } else {
+            $data['payment_allsecureexchange_order_status_id'] = $this->config->get('payment_allsecureexchange'.$this->code.'_order_status_id');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_logging'])) {
+            $data['payment_allsecureexchange_logging'] = $this->request->post['payment_allsecureexchange'.$this->code.'_logging'];
+        } else {
+            $data['payment_allsecureexchange_logging'] = $this->config->get('payment_allsecureexchange'.$this->code.'_logging');
+        }
 
         if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_api_key'])) {
             $data['payment_allsecureexchange_api_key'] = $this->request->post['payment_allsecureexchange'.$this->code.'_api_key'];
@@ -344,6 +390,24 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
             $data['payment_allsecureexchange_sort_order'] = $this->request->post['payment_allsecureexchange'.$this->code.'_sort_order'];
         } else {
             $data['payment_allsecureexchange_sort_order'] = $this->config->get('payment_allsecureexchange'.$this->code.'_sort_order');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_transaction_type'])) {
+            $data['payment_allsecureexchange_transaction_type'] = $this->request->post['payment_allsecureexchange'.$this->code.'_transaction_type'];
+        } else {
+            $data['payment_allsecureexchange_transaction_type'] = $this->config->get('payment_allsecureexchange'.$this->code.'_transaction_type');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_transaction_email'])) {
+            $data['payment_allsecureexchange_transaction_email'] = $this->request->post['payment_allsecureexchange'.$this->code.'_transaction_email'];
+        } else {
+            $data['payment_allsecureexchange_transaction_email'] = $this->config->get('payment_allsecureexchange'.$this->code.'_transaction_email');
+        }
+
+        if (isset($this->request->post['payment_allsecureexchange'.$this->code.'_transaction_confirmation_page'])) {
+            $data['payment_allsecureexchange_transaction_confirmation_page'] = $this->request->post['payment_allsecureexchange'.$this->code.'_transaction_confirmation_page'];
+        } else {
+            $data['payment_allsecureexchange_transaction_confirmation_page'] = $this->config->get('payment_allsecureexchange'.$this->code.'_transaction_confirmation_page');
         }
 
         $data['header'] = $this->load->controller('common/header');
@@ -395,6 +459,14 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
     {
         if (!$this->user->hasPermission('modify', 'extension/allsecureexchange/payment/allsecureexchange'.$this->code)) {
             $this->error['warning'] = $this->language->get('error_permission');
+        }
+
+        if (!$this->request->post['payment_allsecureexchange'.$this->code.'_api_user']) {
+            $this->error['api_user'] = $this->language->get('error_api_user');
+        }
+
+        if (!$this->request->post['payment_allsecureexchange'.$this->code.'_api_password']) {
+            $this->error['api_password'] = $this->language->get('error_api_password');
         }
         
         if (!$this->request->post['payment_allsecureexchange'.$this->code.'_api_key']) {
@@ -500,6 +572,11 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         if ($this->config->get('payment_allsecureexchange_mode') == 'test') {
             $testMode = true;
         }
+        if (!empty($this->code)) {
+            if ($this->config->get('payment_allsecureexchange'.$this->code.'_mode') == 'test') {
+                $testMode = true;
+            }
+        }
         
         if ($testMode) {
             AllsecureClient::setApiUrl($this->getTestApiUrl());
@@ -511,10 +588,22 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
         if (!empty($api_user)) {
             $api_user = trim($api_user);
         }
+        if (!empty($this->code)) {
+            $api_user = $this->config->get('payment_allsecureexchange'.$this->code.'_api_user');
+            if (!empty($api_user)) {
+                $api_user = trim($api_user);
+            }
+        }
         
         $api_password = $this->config->get('payment_allsecureexchange_api_password');
         if (!empty($api_password)) {
             $api_password = htmlspecialchars_decode($api_password);
+        }
+        if (!empty($this->code)) {
+            $api_password = $this->config->get('payment_allsecureexchange'.$this->code.'_api_password');
+            if (!empty($api_password)) {
+                $api_password = htmlspecialchars_decode($api_password);
+            }
         }
         
         $api_key = $this->config->get('payment_allsecureexchange_api_key');
@@ -779,6 +868,12 @@ class Allsecureexchange extends \Opencart\System\Engine\Controller {
                 $comment = $comment1.$comment2;
                 $message = $comment;
                 $order_status_id = (int)$this->config->get('payment_allsecureexchange_order_status_id');
+                if (!empty($this->code)) {
+                    $order_status_id2 = (int)$this->config->get('payment_allsecureexchange'.$this->code.'_order_status_id');
+                    if ($order_status_id2 > 0) {
+                        $order_status_id = $order_status_id2;
+                    }
+                }
                 $store = $this->createStoreInstance();
                 $store->load->model('checkout/order');
                 $store->model_checkout_order->addHistory((int)$order_id, $order_status_id, $comment);
